@@ -4,6 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import rs.ac.bg.fon.eduhub.entity.MyEntity;
 
+/**
+ * Šifarnička (lookup) klasa koja predstavlja nivo težine kursa
+ * (npr. BEGINNER, INTERMEDIATE, ADVANCED).
+ *
+ * @author Mihajlo Ristanovic
+ * @version 1.0
+ */
 @Entity
 @Table(name = "course_level")
 @Getter
@@ -14,11 +21,13 @@ import rs.ac.bg.fon.eduhub.entity.MyEntity;
 @ToString
 public class CourseLevel implements MyEntity {
 
+    /** Jedinstveni identifikator nivoa kursa. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "course_level_id")
     private Long courseLevelId;
 
+    /** Naziv nivoa (npr. "BEGINNER", "INTERMEDIATE", "ADVANCED"). */
     @Column(name = "course_level_name", nullable = false, unique = true, length = 30)
     private String courseLevelName;
 }
