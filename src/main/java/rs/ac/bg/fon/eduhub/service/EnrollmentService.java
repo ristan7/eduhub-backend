@@ -5,6 +5,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import rs.ac.bg.fon.eduhub.dto.CreateEnrollmentRequest;
 import rs.ac.bg.fon.eduhub.dto.EnrollmentDto;
+import rs.ac.bg.fon.eduhub.dto.UpdateProgressRequest;
 import rs.ac.bg.fon.eduhub.entity.impl.Course;
 import rs.ac.bg.fon.eduhub.entity.impl.Enrollment;
 import rs.ac.bg.fon.eduhub.entity.impl.User;
@@ -70,6 +71,30 @@ public class EnrollmentService {
                 .stream()
                 .map(enrollmentMapper::toDto)
                 .toList();
+    }
+
+    // SO18 - Praćenje napretka studenta
+    public EnrollmentDto updateProgress(Long enrollmentId, UpdateProgressRequest request, Authentication authentication) {
+        User student = currentUser(authentication);
+        Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Enrollment not found: " + enrollmentId));
+
+        if (enrollment.getStudent() == null || !enrollment.getStudent().getUserId().equals(student.getUserId())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "You can only update progress on your own enrollments.");
+        }
+
+        enrollment.setProgressPercentage(request.progressPercentage());
+
+        if (request.progressPercentage() == 100) {
+            EnrollmentStatus completedStatus = enrollmentStatusRepository.findByEnrollmentStatusName("COMPLETED")
+                    .orElseThrow(() -> new IllegalStateException("Enrollment status COMPLETED not found."));
+            enrollment.setEnrollmentStatus(completedStatus);
+            enrollment.setCompletedAt(java.time.LocalDateTime.now());
+        }
+
+        enrollmentRepository.save(enrollment);
+        return enrollmentMapper.toDto(enrollment);
     }
 
     private User currentUser(Authentication authentication) {
