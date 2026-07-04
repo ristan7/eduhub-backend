@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 import rs.ac.bg.fon.eduhub.dto.CreateEnrollmentRequest;
 import rs.ac.bg.fon.eduhub.dto.EnrollmentDto;
 import rs.ac.bg.fon.eduhub.service.EnrollmentService;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import rs.ac.bg.fon.eduhub.dto.UpdateProgressRequest;
 
 @RestController
 @RequestMapping("/api/enrollments")
@@ -35,5 +38,13 @@ public class EnrollmentController {
     @GetMapping("/me")
     public ResponseEntity<List<EnrollmentDto>> getMyEnrollments(Authentication authentication) {
         return ResponseEntity.ok(enrollmentService.getMyEnrollments(authentication));
+    }
+
+    // SO18 - Praćenje napretka studenta
+    @PatchMapping("/{id}/progress")
+    public ResponseEntity<EnrollmentDto> updateProgress(@PathVariable Long id,
+                                                        @Valid @RequestBody UpdateProgressRequest request,
+                                                        Authentication authentication) {
+        return ResponseEntity.ok(enrollmentService.updateProgress(id, request, authentication));
     }
 }
