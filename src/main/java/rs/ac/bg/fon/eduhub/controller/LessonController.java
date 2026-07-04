@@ -11,29 +11,53 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import rs.ac.bg.fon.eduhub.dto.CreateLessonRequest;
 import rs.ac.bg.fon.eduhub.dto.LessonDto;
 import rs.ac.bg.fon.eduhub.dto.UpdateLessonRequest;
 import rs.ac.bg.fon.eduhub.service.LessonService;
 
+/**
+ * REST kontroler za upravljanje lekcijama u okviru kursa (SO12-SO15).
+ * Dodavanje, izmena i brisanje lekcija zahtevaju ulogu INSTRUCTOR ili
+ * ADMIN, i to samo za lekcije kursa čiji je korisnik autor.
+ *
+ * @author Mihajlo Ristanovic
+ * @version 1.0
+ */
 @RestController
 public class LessonController {
 
     private final LessonService lessonService;
 
+    /**
+     * Kreira kontroler sa injektovanim servisom za lekcije.
+     *
+     * @param lessonService servis koji implementira poslovnu logiku lekcija
+     */
     public LessonController(LessonService lessonService) {
         this.lessonService = lessonService;
     }
 
-    // SO15 - Pregled lekcija u okviru kursa
+    /**
+     * Vraća listu svih lekcija u okviru zadatog kursa (SO15).
+     *
+     * @param courseId identifikator kursa
+     * @return HTTP 200 sa listom lekcija kursa
+     */
     @GetMapping("/api/courses/{courseId}/lessons")
     public ResponseEntity<List<LessonDto>> getLessonsByCourse(@PathVariable Long courseId) {
         return ResponseEntity.ok(lessonService.getLessonsByCourse(courseId));
     }
 
-    // SO12 - Dodavanje lekcije na kurs
+    /**
+     * Dodaje novu lekciju na zadati kurs (SO12).
+     *
+     * @param courseId identifikator kursa na koji se lekcija dodaje
+     * @param request podaci o novoj lekciji
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return HTTP 201 sa podacima novokreirane lekcije
+     */
     @PostMapping("/api/courses/{courseId}/lessons")
     public ResponseEntity<LessonDto> addLesson(@PathVariable Long courseId,
                                                @Valid @RequestBody CreateLessonRequest request,
@@ -41,7 +65,14 @@ public class LessonController {
         return ResponseEntity.status(HttpStatus.CREATED).body(lessonService.addLesson(courseId, request, authentication));
     }
 
-    // SO13 - Izmena lekcije
+    /**
+     * Izmenjuje podatke postojeće lekcije (SO13).
+     *
+     * @param id identifikator lekcije koja se menja
+     * @param request novi podaci o lekciji
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return HTTP 200 sa podacima izmenjene lekcije
+     */
     @PutMapping("/api/lessons/{id}")
     public ResponseEntity<LessonDto> updateLesson(@PathVariable Long id,
                                                   @Valid @RequestBody UpdateLessonRequest request,
@@ -49,7 +80,13 @@ public class LessonController {
         return ResponseEntity.ok(lessonService.updateLesson(id, request, authentication));
     }
 
-    // SO14 - Brisanje lekcije
+    /**
+     * Trajno briše lekciju (SO14).
+     *
+     * @param id identifikator lekcije koja se briše
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return HTTP 204 bez tela odgovora
+     */
     @DeleteMapping("/api/lessons/{id}")
     public ResponseEntity<Void> deleteLesson(@PathVariable Long id, Authentication authentication) {
         lessonService.deleteLesson(id, authentication);
