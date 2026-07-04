@@ -15,6 +15,14 @@ import rs.ac.bg.fon.eduhub.repository.EnrollmentRepository;
 import rs.ac.bg.fon.eduhub.repository.ReviewRepository;
 import rs.ac.bg.fon.eduhub.repository.UserRepository;
 
+/**
+ * Servis koji implementira poslovnu logiku ocenjivanja kurseva i pregleda
+ * ocena (SO19, SO20). Ocenjivanje je dozvoljeno samo studentu čija je
+ * prijava u pitanju, i to najviše jednom po prijavi.
+ *
+ * @author Mihajlo Ristanovic
+ * @version 1.0
+ */
 @Service
 public class ReviewService {
 
@@ -24,6 +32,15 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final ReviewMapper reviewMapper;
 
+    /**
+     * Kreira servis sa svim potrebnim zavisnostima.
+     *
+     * @param reviewRepository repozitorijum ocena
+     * @param enrollmentRepository repozitorijum prijava
+     * @param courseRepository repozitorijum kurseva
+     * @param userRepository repozitorijum korisnika
+     * @param reviewMapper mapper za konverziju entiteta ocene u DTO
+     */
     public ReviewService(ReviewRepository reviewRepository,
                          EnrollmentRepository enrollmentRepository,
                          CourseRepository courseRepository,
@@ -36,7 +53,18 @@ public class ReviewService {
         this.reviewMapper = reviewMapper;
     }
 
-    // SO19 - Ocenjivanje kursa
+    /**
+     * Dodaje ocenu i komentar za kurs, vezano za konkretnu prijavu (SO19).
+     * Dozvoljeno samo studentu kome prijava pripada, i samo jednom po
+     * prijavi.
+     *
+     * @param enrollmentId identifikator prijave koja se ocenjuje
+     * @param request ocena i komentar
+     * @param authentication autentifikacija trenutno prijavljenog korisnika (student)
+     * @return DTO novokreirane ocene
+     * @throws IllegalArgumentException ako prijava sa datim identifikatorom ne postoji, ili već ima ocenu
+     * @throws AccessDeniedException ako prijava ne pripada trenutno prijavljenom korisniku
+     */
     public ReviewDto addReview(Long enrollmentId, CreateReviewRequest request, Authentication authentication) {
         User student = currentUser(authentication);
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
@@ -59,7 +87,13 @@ public class ReviewService {
         return reviewMapper.toDto(review);
     }
 
-    // SO20 - Pregled ocena i komentara za kurs
+    /**
+     * Vraća listu svih ocena ostavljenih za zadati kurs (SO20).
+     *
+     * @param courseId identifikator kursa
+     * @return lista ocena kursa
+     * @throws IllegalArgumentException ako kurs sa datim identifikatorom ne postoji
+     */
     public List<ReviewDto> getReviewsByCourse(Long courseId) {
         courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseId));
@@ -69,6 +103,13 @@ public class ReviewService {
                 .toList();
     }
 
+    /**
+     * Pronalazi entitet korisnika na osnovu email adrese iz autentifikacije.
+     *
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return pronađeni entitet korisnika
+     * @throws IllegalStateException ako autentifikovani korisnik neočekivano ne postoji u bazi
+     */
     private User currentUser(Authentication authentication) {
         return userRepository.findByUserEmail(authentication.getName())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found."));
