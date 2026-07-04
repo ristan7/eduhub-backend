@@ -15,4 +15,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> search(@Param("keyword") String keyword,
                         @Param("categoryId") Long categoryId,
                         @Param("levelId") Long levelId);
+
+    long countByCourseStatus_CourseStatusName(String courseStatusName);
 }
