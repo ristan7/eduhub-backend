@@ -3,6 +3,7 @@ package rs.ac.bg.fon.eduhub.client;
 import rs.ac.bg.fon.eduhub.client.menu.AuthMenu;
 import rs.ac.bg.fon.eduhub.client.menu.CourseMenu;
 import rs.ac.bg.fon.eduhub.client.menu.LessonMenu;
+import rs.ac.bg.fon.eduhub.client.menu.MaterialMenu;
 
 import java.util.Scanner;
 
@@ -37,7 +38,7 @@ public class EduHubConsoleClient {
                 case "1" -> AuthMenu.show(apiClient, scanner);
                 case "2" -> CourseMenu.show(apiClient, scanner);
                 case "3" -> LessonMenu.show(apiClient, scanner);
-                case "4" -> System.out.println("Material meni će biti implementiran u sledećem koraku.");
+                case "4" -> MaterialMenu.show(apiClient, scanner);
                 case "5" -> System.out.println("Enrollment meni će biti implementiran u sledećem koraku.");
                 case "6" -> System.out.println("Review meni će biti implementiran u sledećem koraku.");
                 case "7" -> System.out.println("Certificate meni će biti implementiran u sledećem koraku.");
