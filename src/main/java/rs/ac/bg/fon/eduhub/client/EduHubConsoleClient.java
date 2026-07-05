@@ -1,8 +1,15 @@
 package rs.ac.bg.fon.eduhub.client;
 
-import rs.ac.bg.fon.eduhub.client.menu.*;
-
 import java.util.Scanner;
+import rs.ac.bg.fon.eduhub.client.menu.AuthMenu;
+import rs.ac.bg.fon.eduhub.client.menu.CourseMenu;
+import rs.ac.bg.fon.eduhub.client.menu.LessonMenu;
+import rs.ac.bg.fon.eduhub.client.menu.MaterialMenu;
+import rs.ac.bg.fon.eduhub.client.menu.EnrollmentMenu;
+import rs.ac.bg.fon.eduhub.client.menu.ReviewMenu;
+import rs.ac.bg.fon.eduhub.client.menu.CertificateMenu;
+import rs.ac.bg.fon.eduhub.client.menu.NotificationMenu;
+import rs.ac.bg.fon.eduhub.client.menu.AdminMenu;
 
 /**
  * Ulazna tačka konzolnog klijenta za EduHub backend.
@@ -16,7 +23,6 @@ public class EduHubConsoleClient {
 
     private static final Scanner scanner = new Scanner(System.in);
     private static final ApiClient apiClient = new ApiClient();
-
 
     /**
      * Pokreće konzolni klijent i prikazuje glavni meni u petlji dok korisnik
@@ -39,8 +45,8 @@ public class EduHubConsoleClient {
                 case "5" -> EnrollmentMenu.show(apiClient, scanner);
                 case "6" -> ReviewMenu.show(apiClient, scanner);
                 case "7" -> CertificateMenu.show(apiClient, scanner);
-                case "8" -> System.out.println("Notification meni će biti implementiran u sledećem koraku.");
-                case "9" -> System.out.println("Admin meni će biti implementiran u sledećem koraku.");
+                case "8" -> NotificationMenu.show(apiClient, scanner);
+                case "9" -> AdminMenu.show(apiClient, scanner);
                 case "0" -> {
                     running = false;
                     System.out.println("Klijent je zatvoren.");
