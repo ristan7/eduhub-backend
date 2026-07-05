@@ -1,5 +1,7 @@
 package rs.ac.bg.fon.eduhub.client;
 
+import rs.ac.bg.fon.eduhub.client.menu.AuthMenu;
+
 import java.util.Scanner;
 
 /**
@@ -13,6 +15,8 @@ import java.util.Scanner;
 public class EduHubConsoleClient {
 
     private static final Scanner scanner = new Scanner(System.in);
+    private static final ApiClient apiClient = new ApiClient();
+
 
     /**
      * Pokreće konzolni klijent i prikazuje glavni meni u petlji dok korisnik
@@ -28,7 +32,7 @@ public class EduHubConsoleClient {
             String choice = scanner.nextLine().trim();
 
             switch (choice) {
-                case "1" -> System.out.println("Auth meni će biti implementiran u sledećem koraku.");
+                case "1" -> AuthMenu.show(apiClient, scanner);
                 case "2" -> System.out.println("Course meni će biti implementiran u sledećem koraku.");
                 case "3" -> System.out.println("Lesson meni će biti implementiran u sledećem koraku.");
                 case "4" -> System.out.println("Material meni će biti implementiran u sledećem koraku.");
