@@ -37,8 +37,8 @@ public class EduHubConsoleClient {
                 case "3" -> LessonMenu.show(apiClient, scanner);
                 case "4" -> MaterialMenu.show(apiClient, scanner);
                 case "5" -> EnrollmentMenu.show(apiClient, scanner);
-                case "6" -> System.out.println("Review meni će biti implementiran u sledećem koraku.");
-                case "7" -> System.out.println("Certificate meni će biti implementiran u sledećem koraku.");
+                case "6" -> ReviewMenu.show(apiClient, scanner);
+                case "7" -> CertificateMenu.show(apiClient, scanner);
                 case "8" -> System.out.println("Notification meni će biti implementiran u sledećem koraku.");
                 case "9" -> System.out.println("Admin meni će biti implementiran u sledećem koraku.");
                 case "0" -> {
