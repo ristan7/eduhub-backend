@@ -107,6 +107,7 @@ Generisana dokumentacija: `target/site/apidocs/index.html`
 
 ## Struktura projekta
 src/main/java/rs/ac/bg/fon/eduhub/
+├── client/           # koznolni meni (simulacija frontend dela)
 ├── entity/           # domenske klase (JPA entiteti)
 │   ├── impl/         # glavni entiteti (User, Course, Lesson, Material, Enrollment, Review, Certificate, Notification)
 │   └── lookup/        # šifarničke klase (Role, CourseStatus, CourseLevel, CourseCategory, LessonType, MaterialType, NotificationType, EnrollmentStatus)
@@ -121,10 +122,6 @@ src/main/java/rs/ac/bg/fon/eduhub/
 ## Domenske klase (16)
 
 `User`, `Course`, `Lesson`, `Material`, `Enrollment`, `Review`, `Certificate`, `Notification`, `Role`, `CourseStatus`, `CourseLevel`, `CourseCategory`, `LessonType`, `MaterialType`, `NotificationType`, `EnrollmentStatus`.
-
-## Git istorija
-
-Projekat je razvijan vertikalno (feature po feature) kroz odvojene grane, sa merge-om u `main` i semantičkim tagovanjem svake celine (`v0.1.0`–`v0.14.0`): inicijalizacija projekta, domenski model, autentifikacija, kursevi, lekcije, materijali, prijave, ocene/sertifikati, notifikacije, admin operacije, praćenje napretka, error handling, Javadoc, JUnit testovi.
 
 ## Autor
 
