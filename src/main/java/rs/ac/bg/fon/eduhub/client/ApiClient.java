@@ -91,6 +91,22 @@ public class ApiClient {
     }
 
     /**
+     * Šalje PATCH zahtev sa JSON telom na dati API put.
+     *
+     * @param path     putanja na koju se šalje zahtev.
+     * @param jsonBody telo zahteva u JSON formatu.
+     * @return odgovor servera.
+     * @throws IOException          ako dođe do greške u komunikaciji.
+     * @throws InterruptedException ako je nit prekinuta tokom čekanja na odgovor.
+     */
+    public ApiResponse patch(String path, String jsonBody) throws IOException, InterruptedException {
+        HttpRequest request = baseRequestBuilder(path)
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+        return send(request);
+    }
+
+    /**
      * Kreira osnovni {@link HttpRequest.Builder} sa podešenim URI-jem, JSON
      * content-type headerom i, ukoliko postoji, JWT Authorization headerom.
      *
