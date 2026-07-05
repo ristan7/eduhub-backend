@@ -16,6 +16,15 @@ import rs.ac.bg.fon.eduhub.repository.MaterialRepository;
 import rs.ac.bg.fon.eduhub.repository.MaterialTypeRepository;
 import rs.ac.bg.fon.eduhub.repository.UserRepository;
 
+/**
+ * Servis koji implementira poslovnu logiku upravljanja nastavnim
+ * materijalima u okviru lekcije (SO16-SO17). Dodavanje materijala
+ * dozvoljeno je samo autoru kursa kojem lekcija pripada ili korisniku
+ * sa ulogom ADMIN.
+ *
+ * @author Mihajlo Ristanovic
+ * @version 1.0
+ */
 @Service
 public class MaterialService {
 
@@ -25,6 +34,15 @@ public class MaterialService {
     private final UserRepository userRepository;
     private final MaterialMapper materialMapper;
 
+    /**
+     * Kreira servis sa svim potrebnim zavisnostima.
+     *
+     * @param materialRepository repozitorijum materijala
+     * @param materialTypeRepository repozitorijum tipova materijala
+     * @param lessonRepository repozitorijum lekcija
+     * @param userRepository repozitorijum korisnika
+     * @param materialMapper mapper za konverziju entiteta materijala u DTO
+     */
     public MaterialService(MaterialRepository materialRepository,
                            MaterialTypeRepository materialTypeRepository,
                            LessonRepository lessonRepository,
@@ -37,7 +55,14 @@ public class MaterialService {
         this.materialMapper = materialMapper;
     }
 
-    // SO17 - Pregled nastavnog materijala
+    /**
+     * Vraća listu svih nastavnih materijala u okviru zadate lekcije,
+     * sortiranu po redosledu prikaza (SO17).
+     *
+     * @param lessonId identifikator lekcije
+     * @return lista materijala lekcije
+     * @throws IllegalArgumentException ako lekcija sa datim identifikatorom ne postoji
+     */
     public List<MaterialDto> getMaterialsByLesson(Long lessonId) {
         findLessonOrThrow(lessonId);
         return materialRepository.findByLesson_LessonIdOrderByMaterialOrderIndexAsc(lessonId)
@@ -46,7 +71,17 @@ public class MaterialService {
                 .toList();
     }
 
-    // SO16 - Dodavanje nastavnog materijala
+    /**
+     * Dodaje novi nastavni materijal na zadatu lekciju (SO16). Dozvoljeno
+     * samo autoru kursa kojem lekcija pripada ili korisniku sa ulogom ADMIN.
+     *
+     * @param lessonId identifikator lekcije na koju se materijal dodaje
+     * @param request podaci o novom materijalu
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return DTO novokreiranog materijala
+     * @throws IllegalArgumentException ako lekcija ili tip materijala sa datim identifikatorom ne postoje
+     * @throws AccessDeniedException ako korisnik nije autor kursa niti ima ulogu ADMIN
+     */
     public MaterialDto addMaterial(Long lessonId, CreateMaterialRequest request, Authentication authentication) {
         Lesson lesson = findLessonOrThrow(lessonId);
         requireCourseOwnerOrAdmin(lesson, authentication);
@@ -66,11 +101,28 @@ public class MaterialService {
         return materialMapper.toDto(material);
     }
 
+    /**
+     * Pronalazi lekciju po identifikatoru ili baca izuzetak ako ne postoji.
+     *
+     * @param lessonId identifikator lekcije
+     * @return pronađeni entitet lekcije
+     * @throws IllegalArgumentException ako lekcija sa datim identifikatorom ne postoji
+     */
     private Lesson findLessonOrThrow(Long lessonId) {
         return lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new IllegalArgumentException("Lesson not found: " + lessonId));
     }
 
+    /**
+     * Proverava da li trenutno prijavljeni korisnik ima pravo da dodaje
+     * materijale u datu lekciju (mora biti autor kursa kojem lekcija
+     * pripada ili imati ulogu ADMIN).
+     *
+     * @param lesson lekcija na koju se materijal dodaje
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @throws IllegalStateException ako autentifikovani korisnik neočekivano ne postoji u bazi
+     * @throws AccessDeniedException ako korisnik nije autor kursa niti ima ulogu ADMIN
+     */
     private void requireCourseOwnerOrAdmin(Lesson lesson, Authentication authentication) {
         User currentUser = userRepository.findByUserEmail(authentication.getName())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found."));

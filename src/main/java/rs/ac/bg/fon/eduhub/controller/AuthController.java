@@ -13,32 +13,60 @@ import rs.ac.bg.fon.eduhub.dto.RegisterRequest;
 import rs.ac.bg.fon.eduhub.dto.UserDto;
 import rs.ac.bg.fon.eduhub.service.AuthService;
 
+/**
+ * REST kontroler za registraciju, prijavu i odjavu korisnika (SO1-SO3).
+ * Svi endpointi ovog kontrolera su javno dostupni, bez potrebe za
+ * prethodnom autentifikacijom.
+ *
+ * @author Mihajlo Ristanovic
+ * @version 1.0
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
 
+    /**
+     * Kreira kontroler sa injektovanim servisom za autentifikaciju.
+     *
+     * @param authService servis koji implementira poslovnu logiku autentifikacije
+     */
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
 
-    // SO1 - Registracija korisnika
+    /**
+     * Registruje novog korisnika na platformi (SO1).
+     *
+     * @param request podaci o novom korisniku
+     * @return HTTP 201 sa podacima o registrovanom korisniku
+     */
     @PostMapping("/register")
     public ResponseEntity<UserDto> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
-    // SO2 - Prijava korisnika na sistem
+    /**
+     * Prijavljuje korisnika na sistem i vraća JWT token (SO2).
+     *
+     * @param request email i lozinka korisnika
+     * @return HTTP 200 sa JWT tokenom i podacima o korisniku
+     */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    // SO3 - Odjava korisnika sa sistema
+    /**
+     * Odjavljuje korisnika sa sistema (SO3). Pošto je autentifikacija
+     * zasnovana na JWT tokenima bez stanja na serveru, odjava se svodi
+     * na brisanje tokena na klijentskoj strani.
+     *
+     * @return HTTP 200 bez tela odgovora
+     */
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        // JWT je stateless - odjava se vrši brisanjem tokena na klijentskoj strani
         return ResponseEntity.ok().build();
     }
 }

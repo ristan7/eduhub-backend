@@ -14,6 +14,14 @@ import rs.ac.bg.fon.eduhub.repository.NotificationRepository;
 import rs.ac.bg.fon.eduhub.repository.NotificationTypeRepository;
 import rs.ac.bg.fon.eduhub.repository.UserRepository;
 
+/**
+ * Servis koji implementira poslovnu logiku slanja notifikacija, pregleda
+ * notifikacija korisnika i označavanja notifikacija kao pročitanih
+ * (SO25-SO27).
+ *
+ * @author Mihajlo Ristanovic
+ * @version 1.0
+ */
 @Service
 public class NotificationService {
 
@@ -22,6 +30,14 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final NotificationMapper notificationMapper;
 
+    /**
+     * Kreira servis sa svim potrebnim zavisnostima.
+     *
+     * @param notificationRepository repozitorijum notifikacija
+     * @param notificationTypeRepository repozitorijum tipova notifikacija
+     * @param userRepository repozitorijum korisnika
+     * @param notificationMapper mapper za konverziju entiteta notifikacije u DTO
+     */
     public NotificationService(NotificationRepository notificationRepository,
                                NotificationTypeRepository notificationTypeRepository,
                                UserRepository userRepository,
@@ -32,7 +48,13 @@ public class NotificationService {
         this.notificationMapper = notificationMapper;
     }
 
-    // SO25 - Slanje notifikacije korisniku
+    /**
+     * Šalje notifikaciju zadatom korisniku (SO25).
+     *
+     * @param request podaci o notifikaciji (primalac, naslov, poruka, tip)
+     * @return DTO novokreirane notifikacije
+     * @throws IllegalArgumentException ako korisnik ili tip notifikacije sa datim identifikatorom ne postoje
+     */
     public NotificationDto sendNotification(CreateNotificationRequest request) {
         User recipient = userRepository.findById(request.userId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.userId()));
@@ -51,7 +73,13 @@ public class NotificationService {
         return notificationMapper.toDto(notification);
     }
 
-    // SO26 - Pregled notifikacija korisnika
+    /**
+     * Vraća listu svih notifikacija trenutno prijavljenog korisnika,
+     * sortiranu od najnovije ka najstarijoj (SO26).
+     *
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return lista notifikacija korisnika
+     */
     public List<NotificationDto> getMyNotifications(Authentication authentication) {
         User user = currentUser(authentication);
         return notificationRepository.findByUser_UserIdOrderBySentAtDesc(user.getUserId())
@@ -60,7 +88,16 @@ public class NotificationService {
                 .toList();
     }
 
-    // SO27 - Označavanje notifikacije kao pročitane
+    /**
+     * Označava notifikaciju kao pročitanu (SO27). Dozvoljeno samo
+     * korisniku kome je notifikacija upućena.
+     *
+     * @param notificationId identifikator notifikacije koja se označava
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return DTO ažurirane notifikacije
+     * @throws IllegalArgumentException ako notifikacija sa datim identifikatorom ne postoji
+     * @throws AccessDeniedException ako notifikacija nije upućena trenutno prijavljenom korisniku
+     */
     public NotificationDto markAsRead(Long notificationId, Authentication authentication) {
         User user = currentUser(authentication);
         Notification notification = notificationRepository.findById(notificationId)
@@ -75,6 +112,13 @@ public class NotificationService {
         return notificationMapper.toDto(notification);
     }
 
+    /**
+     * Pronalazi entitet korisnika na osnovu email adrese iz autentifikacije.
+     *
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return pronađeni entitet korisnika
+     * @throws IllegalStateException ako autentifikovani korisnik neočekivano ne postoji u bazi
+     */
     private User currentUser(Authentication authentication) {
         return userRepository.findByUserEmail(authentication.getName())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found."));

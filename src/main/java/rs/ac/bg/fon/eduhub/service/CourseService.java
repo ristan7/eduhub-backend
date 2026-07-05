@@ -19,6 +19,14 @@ import rs.ac.bg.fon.eduhub.repository.CourseRepository;
 import rs.ac.bg.fon.eduhub.repository.CourseStatusRepository;
 import rs.ac.bg.fon.eduhub.repository.UserRepository;
 
+/**
+ * Servis koji implementira poslovnu logiku pregleda, pretrage i upravljanja
+ * kursevima (SO4-SO9). Izmena i deaktivacija kursa dozvoljena je samo
+ * autoru kursa ili korisniku sa ulogom ADMIN.
+ *
+ * @author Mihajlo Ristanovic
+ * @version 1.0
+ */
 @Service
 public class CourseService {
 
@@ -32,6 +40,16 @@ public class CourseService {
     private final UserRepository userRepository;
     private final CourseMapper courseMapper;
 
+    /**
+     * Kreira servis sa svim potrebnim zavisnostima.
+     *
+     * @param courseRepository repozitorijum kurseva
+     * @param courseCategoryRepository repozitorijum kategorija kurseva
+     * @param courseLevelRepository repozitorijum nivoa kurseva
+     * @param courseStatusRepository repozitorijum statusa kurseva
+     * @param userRepository repozitorijum korisnika
+     * @param courseMapper mapper za konverziju entiteta kursa u DTO
+     */
     public CourseService(CourseRepository courseRepository,
                          CourseCategoryRepository courseCategoryRepository,
                          CourseLevelRepository courseLevelRepository,
@@ -46,25 +64,51 @@ public class CourseService {
         this.courseMapper = courseMapper;
     }
 
-    // SO4 - Pregled svih kurseva
+    /**
+     * Vraća listu svih kurseva u sistemu (SO4).
+     *
+     * @return lista svih kurseva
+     */
     public List<CourseDto> getAllCourses() {
         return courseRepository.findAll().stream().map(courseMapper::toDto).toList();
     }
 
-    // SO5 - Pretraga i filtriranje kurseva
+    /**
+     * Pretražuje kurseve po ključnoj reči, kategoriji i nivou (SO5).
+     *
+     * @param keyword ključna reč za pretragu naslova, ili {@code null}
+     * @param categoryId identifikator kategorije za filtriranje, ili {@code null}
+     * @param levelId identifikator nivoa za filtriranje, ili {@code null}
+     * @return lista kurseva koji zadovoljavaju zadate kriterijume
+     */
     public List<CourseDto> searchCourses(String keyword, Long categoryId, Long levelId) {
         return courseRepository.search(keyword, categoryId, levelId).stream()
                 .map(courseMapper::toDto)
                 .toList();
     }
 
-    // SO6 - Pregled detalja kursa
+    /**
+     * Vraća detalje jednog kursa po identifikatoru (SO6).
+     *
+     * @param courseId identifikator kursa
+     * @return detalji traženog kursa
+     * @throws IllegalArgumentException ako kurs sa datim identifikatorom ne postoji
+     */
     public CourseDto getCourseById(Long courseId) {
         Course course = findCourseOrThrow(courseId);
         return courseMapper.toDto(course);
     }
 
-    // SO7 - Kreiranje novog kursa
+    /**
+     * Kreira novi kurs u statusu DRAFT, sa trenutno prijavljenim
+     * korisnikom kao autorom (SO7).
+     *
+     * @param request podaci o novom kursu
+     * @param authentication autentifikacija trenutno prijavljenog korisnika (postaje autor kursa)
+     * @return DTO novokreiranog kursa
+     * @throws IllegalArgumentException ako kategorija ili nivo sa datim identifikatorom ne postoje
+     * @throws IllegalStateException ako podrazumevani status DRAFT ne postoji u bazi
+     */
     public CourseDto createCourse(CreateCourseRequest request, Authentication authentication) {
         User author = currentUser(authentication);
 
@@ -88,7 +132,17 @@ public class CourseService {
         return courseMapper.toDto(course);
     }
 
-    // SO8 - Izmena podataka o kursu
+    /**
+     * Izmenjuje podatke postojećeg kursa (SO8). Dozvoljeno samo autoru
+     * kursa ili korisniku sa ulogom ADMIN.
+     *
+     * @param courseId identifikator kursa koji se menja
+     * @param request novi podaci o kursu
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return DTO izmenjenog kursa
+     * @throws IllegalArgumentException ako kurs, kategorija ili nivo sa datim identifikatorom ne postoje
+     * @throws AccessDeniedException ako korisnik nije autor kursa niti ima ulogu ADMIN
+     */
     public CourseDto updateCourse(Long courseId, UpdateCourseRequest request, Authentication authentication) {
         Course course = findCourseOrThrow(courseId);
         requireOwnerOrAdmin(course, authentication);
@@ -107,7 +161,16 @@ public class CourseService {
         return courseMapper.toDto(course);
     }
 
-    // SO9 - Brisanje ili deaktivacija kursa (soft-delete: status -> ARCHIVED)
+    /**
+     * Deaktivira (arhivira) kurs, umesto trajnog brisanja (SO9).
+     * Dozvoljeno samo autoru kursa ili korisniku sa ulogom ADMIN.
+     *
+     * @param courseId identifikator kursa koji se deaktivira
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @throws IllegalArgumentException ako kurs sa datim identifikatorom ne postoji
+     * @throws IllegalStateException ako status ARCHIVED ne postoji u bazi
+     * @throws AccessDeniedException ako korisnik nije autor kursa niti ima ulogu ADMIN
+     */
     public void deactivateCourse(Long courseId, Authentication authentication) {
         Course course = findCourseOrThrow(courseId);
         requireOwnerOrAdmin(course, authentication);
@@ -120,16 +183,38 @@ public class CourseService {
         courseRepository.save(course);
     }
 
+    /**
+     * Pronalazi kurs po identifikatoru ili baca izuzetak ako ne postoji.
+     *
+     * @param courseId identifikator kursa
+     * @return pronađeni entitet kursa
+     * @throws IllegalArgumentException ako kurs sa datim identifikatorom ne postoji
+     */
     private Course findCourseOrThrow(Long courseId) {
         return courseRepository.findById(courseId)
                 .orElseThrow(() -> new IllegalArgumentException("Course not found: " + courseId));
     }
 
+    /**
+     * Pronalazi entitet korisnika na osnovu email adrese iz autentifikacije.
+     *
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return pronađeni entitet korisnika
+     * @throws IllegalStateException ako autentifikovani korisnik neočekivano ne postoji u bazi
+     */
     private User currentUser(Authentication authentication) {
         return userRepository.findByUserEmail(authentication.getName())
                 .orElseThrow(() -> new IllegalStateException("Authenticated user not found."));
     }
 
+    /**
+     * Proverava da li trenutno prijavljeni korisnik ima pravo da menja
+     * dati kurs (mora biti autor kursa ili imati ulogu ADMIN).
+     *
+     * @param course kurs koji se menja
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @throws AccessDeniedException ako korisnik nije autor kursa niti ima ulogu ADMIN
+     */
     private void requireOwnerOrAdmin(Course course, Authentication authentication) {
         User currentUser = currentUser(authentication);
         boolean isAdmin = authentication.getAuthorities().stream()

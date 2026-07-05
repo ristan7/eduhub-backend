@@ -16,29 +16,59 @@ import rs.ac.bg.fon.eduhub.dto.CreateNotificationRequest;
 import rs.ac.bg.fon.eduhub.dto.NotificationDto;
 import rs.ac.bg.fon.eduhub.service.NotificationService;
 
+/**
+ * REST kontroler za slanje notifikacija, pregled notifikacija korisnika
+ * i označavanje notifikacija kao pročitanih (SO25-SO27). Slanje
+ * notifikacije zahteva ulogu INSTRUCTOR ili ADMIN.
+ *
+ * @author Mihajlo Ristanovic
+ * @version 1.0
+ */
 @RestController
 @RequestMapping("/api/notifications")
 public class NotificationController {
 
     private final NotificationService notificationService;
 
+    /**
+     * Kreira kontroler sa injektovanim servisom za notifikacije.
+     *
+     * @param notificationService servis koji implementira poslovnu logiku notifikacija
+     */
     public NotificationController(NotificationService notificationService) {
         this.notificationService = notificationService;
     }
 
-    // SO25 - Slanje notifikacije korisniku
+    /**
+     * Šalje notifikaciju zadatom korisniku (SO25).
+     *
+     * @param request podaci o notifikaciji (primalac, naslov, poruka, tip)
+     * @return HTTP 201 sa podacima novokreirane notifikacije
+     */
     @PostMapping
     public ResponseEntity<NotificationDto> sendNotification(@Valid @RequestBody CreateNotificationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(notificationService.sendNotification(request));
     }
 
-    // SO26 - Pregled notifikacija korisnika
+    /**
+     * Vraća listu svih notifikacija trenutno prijavljenog korisnika
+     * (SO26).
+     *
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return HTTP 200 sa listom notifikacija korisnika
+     */
     @GetMapping("/me")
     public ResponseEntity<List<NotificationDto>> getMyNotifications(Authentication authentication) {
         return ResponseEntity.ok(notificationService.getMyNotifications(authentication));
     }
 
-    // SO27 - Označavanje notifikacije kao pročitane
+    /**
+     * Označava notifikaciju kao pročitanu (SO27).
+     *
+     * @param id identifikator notifikacije koja se označava
+     * @param authentication autentifikacija trenutno prijavljenog korisnika
+     * @return HTTP 200 sa podacima ažurirane notifikacije
+     */
     @PatchMapping("/{id}/read")
     public ResponseEntity<NotificationDto> markAsRead(@PathVariable Long id, Authentication authentication) {
         return ResponseEntity.ok(notificationService.markAsRead(id, authentication));
