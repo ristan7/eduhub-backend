@@ -21,11 +21,16 @@ class CourseStatusTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetCourseStatusId() {
         courseStatus.setCourseStatusId(1L);
-        courseStatus.setCourseStatusName("DRAFT");
 
         assertEquals(1L, courseStatus.getCourseStatusId());
+    }
+
+    @Test
+    void testSetCourseStatusName() {
+        courseStatus.setCourseStatusName("DRAFT");
+
         assertEquals("DRAFT", courseStatus.getCourseStatusName());
     }
 

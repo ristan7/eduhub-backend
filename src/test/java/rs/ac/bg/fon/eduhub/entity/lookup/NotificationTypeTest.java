@@ -21,11 +21,16 @@ class NotificationTypeTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetNotificationTypeId() {
         notificationType.setNotificationTypeId(1L);
-        notificationType.setNotificationTypeName("SYSTEM");
 
         assertEquals(1L, notificationType.getNotificationTypeId());
+    }
+
+    @Test
+    void testSetNotificationTypeName() {
+        notificationType.setNotificationTypeName("SYSTEM");
+
         assertEquals("SYSTEM", notificationType.getNotificationTypeName());
     }
 

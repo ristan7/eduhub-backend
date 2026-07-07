@@ -33,7 +33,11 @@ public class Certificate implements MyEntity {
     @Column(name = "certificate_id")
     private Long certificateId;
 
-    /** Jedinstveni kod sertifikata, generisan pri izdavanju. */
+    /**
+     * Jedinstveni kod sertifikata, generisan pri izdavanju.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake.</p>
+     */
     @NotBlank
     @Column(name = "code", nullable = false, unique = true, length = 50)
     private String code;
@@ -42,7 +46,11 @@ public class Certificate implements MyEntity {
     @Column(name = "issued_at", nullable = false, updatable = false)
     private LocalDateTime issuedAt;
 
-    /** URL adresa na kojoj se nalazi generisani dokument sertifikata (opciono). */
+    /**
+     * URL adresa na kojoj se nalazi generisani dokument sertifikata (opciono).
+     * <p>Nedozvoljena vrednost: string duži od 500 karaktera. {@code null} i
+     * prazan string su dozvoljeni jer je polje opciono.</p>
+     */
     @Size(max = 500)
     @Column(name = "certificate_url", length = 500)
     private String certificateUrl;

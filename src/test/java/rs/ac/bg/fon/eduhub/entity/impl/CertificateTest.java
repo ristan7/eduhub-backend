@@ -3,6 +3,8 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,13 +24,23 @@ class CertificateTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetCertificateId() {
         certificate.setCertificateId(1L);
-        certificate.setCode("CERT-ABCD1234-2026");
-        certificate.setCertificateUrl("https://eduhub.com/certificates/1.pdf");
 
         assertEquals(1L, certificate.getCertificateId());
+    }
+
+    @Test
+    void testSetCode() {
+        certificate.setCode("CERT-ABCD1234-2026");
+
         assertEquals("CERT-ABCD1234-2026", certificate.getCode());
+    }
+
+    @Test
+    void testSetCertificateUrl() {
+        certificate.setCertificateUrl("https://eduhub.com/certificates/1.pdf");
+
         assertEquals("https://eduhub.com/certificates/1.pdf", certificate.getCertificateUrl());
     }
 
@@ -59,5 +71,27 @@ class CertificateTest {
         assertEquals(null, certificate.getIssuedAt());
         certificate.onCreate();
         assertNotNull(certificate.getIssuedAt());
+    }
+
+    @Test
+    void testCodeNullIsInvalid() {
+        certificate.setCode(null);
+
+        assertNull(certificate.getCode());
+    }
+
+    @Test
+    void testCodeBlankIsInvalid() {
+        certificate.setCode("   ");
+
+        assertTrue(certificate.getCode().isBlank());
+    }
+
+    @Test
+    void testCertificateUrlTooLongIsInvalid() {
+        String tooLongUrl = "a".repeat(501);
+        certificate.setCertificateUrl(tooLongUrl);
+
+        assertTrue(certificate.getCertificateUrl().length() > 500);
     }
 }

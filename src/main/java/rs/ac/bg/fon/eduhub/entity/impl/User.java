@@ -34,23 +34,40 @@ public class User implements MyEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    /** Email adresa korisnika, koristi se kao korisničko ime pri prijavi. */
+    /**
+     * Email adresa korisnika, koristi se kao korisničko ime pri prijavi.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake, kao i string koji nije u formatu validne email
+     * adrese.</p>
+     */
     @NotBlank
     @Email
     @Column(name = "user_email", nullable = false, length = 150)
     private String userEmail;
 
-    /** Heš lozinke korisnika (BCrypt). */
+    /**
+     * Heš lozinke korisnika (BCrypt).
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake.</p>
+     */
     @NotBlank
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    /** Ime korisnika. */
+    /**
+     * Ime korisnika.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake.</p>
+     */
     @NotBlank
     @Column(name = "first_name", nullable = false, length = 60)
     private String firstName;
 
-    /** Prezime korisnika. */
+    /**
+     * Prezime korisnika.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake.</p>
+     */
     @NotBlank
     @Column(name = "last_name", nullable = false, length = 60)
     private String lastName;

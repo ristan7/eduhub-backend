@@ -21,11 +21,16 @@ class EnrollmentStatusTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetEnrollmentStatusId() {
         enrollmentStatus.setEnrollmentStatusId(1L);
-        enrollmentStatus.setEnrollmentStatusName("ACTIVE");
 
         assertEquals(1L, enrollmentStatus.getEnrollmentStatusId());
+    }
+
+    @Test
+    void testSetEnrollmentStatusName() {
+        enrollmentStatus.setEnrollmentStatusName("ACTIVE");
+
         assertEquals("ACTIVE", enrollmentStatus.getEnrollmentStatusName());
     }
 

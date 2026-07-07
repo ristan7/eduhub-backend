@@ -35,13 +35,20 @@ public class Lesson implements MyEntity {
     @Column(name = "lesson_id")
     private Long lessonId;
 
-    /** Naslov lekcije. */
+    /**
+     * Naslov lekcije.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake, kao i string duži od 150 karaktera.</p>
+     */
     @NotBlank
     @Size(max = 150)
     @Column(name = "lesson_title", nullable = false, length = 150)
     private String lessonTitle;
 
-    /** Redni broj lekcije u okviru kursa, koristi se za sortiranje. */
+    /**
+     * Redni broj lekcije u okviru kursa, koristi se za sortiranje.
+     * <p>Nedozvoljena vrednost: {@code null}.</p>
+     */
     @NotNull
     @Column(name = "lesson_order_index", nullable = false)
     private Integer lessonOrderIndex;

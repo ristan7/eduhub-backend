@@ -39,13 +39,21 @@ public class Course implements MyEntity {
     @Column(name = "course_id")
     private Long courseId;
 
-    /** Naslov kursa. */
+    /**
+     * Naslov kursa.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake, kao i string duži od 150 karaktera.</p>
+     */
     @NotBlank
     @Size(max = 150)
     @Column(name = "course_title", nullable = false, length = 150)
     private String courseTitle;
 
-    /** Detaljan opis sadržaja i cilja kursa. */
+    /**
+     * Detaljan opis sadržaja i cilja kursa.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake.</p>
+     */
     @NotBlank
     @Column(name = "course_description", columnDefinition = "TEXT", nullable = false)
     private String courseDescription;
