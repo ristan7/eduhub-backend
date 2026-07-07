@@ -21,11 +21,16 @@ class RoleTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetRoleId() {
         role.setRoleId(1L);
-        role.setRoleName("INSTRUCTOR");
 
         assertEquals(1L, role.getRoleId());
+    }
+
+    @Test
+    void testSetRoleName() {
+        role.setRoleName("INSTRUCTOR");
+
         assertEquals("INSTRUCTOR", role.getRoleName());
     }
 

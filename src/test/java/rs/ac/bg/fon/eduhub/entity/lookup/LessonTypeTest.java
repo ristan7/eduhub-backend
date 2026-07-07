@@ -21,11 +21,16 @@ class LessonTypeTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetLessonTypeId() {
         lessonType.setLessonTypeId(1L);
-        lessonType.setLessonTypeName("VIDEO");
 
         assertEquals(1L, lessonType.getLessonTypeId());
+    }
+
+    @Test
+    void testSetLessonTypeName() {
+        lessonType.setLessonTypeName("VIDEO");
+
         assertEquals("VIDEO", lessonType.getLessonTypeName());
     }
 

@@ -21,11 +21,16 @@ class MaterialTypeTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetMaterialTypeId() {
         materialType.setMaterialTypeId(1L);
-        materialType.setMaterialTypeName("PDF");
 
         assertEquals(1L, materialType.getMaterialTypeId());
+    }
+
+    @Test
+    void testSetMaterialTypeName() {
+        materialType.setMaterialTypeName("PDF");
+
         assertEquals("PDF", materialType.getMaterialTypeName());
     }
 

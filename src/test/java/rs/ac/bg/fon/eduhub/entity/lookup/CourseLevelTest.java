@@ -21,11 +21,16 @@ class CourseLevelTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetCourseLevelId() {
         courseLevel.setCourseLevelId(1L);
-        courseLevel.setCourseLevelName("BEGINNER");
 
         assertEquals(1L, courseLevel.getCourseLevelId());
+    }
+
+    @Test
+    void testSetCourseLevelName() {
+        courseLevel.setCourseLevelName("BEGINNER");
+
         assertEquals("BEGINNER", courseLevel.getCourseLevelName());
     }
 

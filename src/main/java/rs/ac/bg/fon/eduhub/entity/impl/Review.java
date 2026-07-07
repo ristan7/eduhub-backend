@@ -30,7 +30,11 @@ public class Review implements MyEntity {
     @Column(name = "review_id")
     private Long reviewId;
 
-    /** Numerička ocena kursa, u opsegu od 1 do 5. */
+    /**
+     * Numerička ocena kursa, u opsegu od 1 do 5.
+     * <p>Nedozvoljene vrednosti: {@code null}, kao i vrednosti manje od 1
+     * ili veće od 5.</p>
+     */
     @NotNull
     @Min(1)
     @Max(5)

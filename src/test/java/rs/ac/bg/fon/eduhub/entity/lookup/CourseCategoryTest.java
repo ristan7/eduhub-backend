@@ -21,11 +21,16 @@ class CourseCategoryTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetCourseCategoryId() {
         courseCategory.setCourseCategoryId(1L);
-        courseCategory.setCourseCategoryName("PROGRAMMING");
 
         assertEquals(1L, courseCategory.getCourseCategoryId());
+    }
+
+    @Test
+    void testSetCourseCategoryName() {
+        courseCategory.setCourseCategoryName("PROGRAMMING");
+
         assertEquals("PROGRAMMING", courseCategory.getCourseCategoryName());
     }
 

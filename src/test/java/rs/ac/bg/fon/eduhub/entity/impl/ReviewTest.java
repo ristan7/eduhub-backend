@@ -3,6 +3,8 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,13 +24,23 @@ class ReviewTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetReviewId() {
         review.setReviewId(1L);
-        review.setRating(5);
-        review.setComment("Odlican kurs!");
 
         assertEquals(1L, review.getReviewId());
+    }
+
+    @Test
+    void testSetRating() {
+        review.setRating(5);
+
         assertEquals(5, review.getRating());
+    }
+
+    @Test
+    void testSetComment() {
+        review.setComment("Odlican kurs!");
+
         assertEquals("Odlican kurs!", review.getComment());
     }
 
@@ -59,5 +71,26 @@ class ReviewTest {
         assertEquals(null, review.getCreatedAt());
         review.onCreate();
         assertNotNull(review.getCreatedAt());
+    }
+
+    @Test
+    void testRatingNullIsInvalid() {
+        review.setRating(null);
+
+        assertNull(review.getRating());
+    }
+
+    @Test
+    void testRatingBelowMinimumIsInvalid() {
+        review.setRating(0);
+
+        assertTrue(review.getRating() < 1);
+    }
+
+    @Test
+    void testRatingAboveMaximumIsInvalid() {
+        review.setRating(6);
+
+        assertTrue(review.getRating() > 5);
     }
 }

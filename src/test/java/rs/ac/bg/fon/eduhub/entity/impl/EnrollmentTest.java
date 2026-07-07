@@ -22,11 +22,16 @@ class EnrollmentTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetEnrollmentId() {
         enrollment.setEnrollmentId(1L);
-        enrollment.setProgressPercentage(50);
 
         assertEquals(1L, enrollment.getEnrollmentId());
+    }
+
+    @Test
+    void testSetProgressPercentage() {
+        enrollment.setProgressPercentage(50);
+
         assertEquals(50, enrollment.getProgressPercentage());
     }
 

@@ -3,6 +3,7 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
@@ -24,15 +25,30 @@ class CourseTest {
     }
 
     @Test
-    void testGettersAndSetters() {
+    void testSetCourseId() {
         course.setCourseId(1L);
-        course.setCourseTitle("Java Osnove");
-        course.setCourseDescription("Uvod u Javu");
-        course.setIsPublished(true);
 
         assertEquals(1L, course.getCourseId());
+    }
+
+    @Test
+    void testSetCourseTitle() {
+        course.setCourseTitle("Java Osnove");
+
         assertEquals("Java Osnove", course.getCourseTitle());
+    }
+
+    @Test
+    void testSetCourseDescription() {
+        course.setCourseDescription("Uvod u Javu");
+
         assertEquals("Uvod u Javu", course.getCourseDescription());
+    }
+
+    @Test
+    void testSetIsPublished() {
+        course.setIsPublished(true);
+
         assertTrue(course.getIsPublished());
     }
 
@@ -84,5 +100,41 @@ class CourseTest {
         assertTrue(course.getLessons().isEmpty());
         assertNotNull(course.getEnrollments());
         assertTrue(course.getEnrollments().isEmpty());
+    }
+
+    @Test
+    void testCourseTitleNullIsInvalid() {
+        course.setCourseTitle(null);
+
+        assertNull(course.getCourseTitle());
+    }
+
+    @Test
+    void testCourseTitleBlankIsInvalid() {
+        course.setCourseTitle("   ");
+
+        assertTrue(course.getCourseTitle().isBlank());
+    }
+
+    @Test
+    void testCourseTitleTooLongIsInvalid() {
+        String tooLongTitle = "a".repeat(151);
+        course.setCourseTitle(tooLongTitle);
+
+        assertTrue(course.getCourseTitle().length() > 150);
+    }
+
+    @Test
+    void testCourseDescriptionNullIsInvalid() {
+        course.setCourseDescription(null);
+
+        assertNull(course.getCourseDescription());
+    }
+
+    @Test
+    void testCourseDescriptionBlankIsInvalid() {
+        course.setCourseDescription("   ");
+
+        assertTrue(course.getCourseDescription().isBlank());
     }
 }

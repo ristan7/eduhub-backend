@@ -34,13 +34,21 @@ public class Notification implements MyEntity {
     @Column(name = "notification_id")
     private Long notificationId;
 
-    /** Naslov notifikacije. */
+    /**
+     * Naslov notifikacije.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake, kao i string duži od 150 karaktera.</p>
+     */
     @NotBlank
     @Size(max = 150)
     @Column(name = "notification_title", nullable = false, length = 150)
     private String notificationTitle;
 
-    /** Tekst poruke notifikacije. */
+    /**
+     * Tekst poruke notifikacije.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake.</p>
+     */
     @NotBlank
     @Column(name = "message", columnDefinition = "TEXT", nullable = false)
     private String message;

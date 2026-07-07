@@ -34,13 +34,20 @@ public class Material implements MyEntity {
     @Column(name = "material_id")
     private Long materialId;
 
-    /** Naziv materijala. */
+    /**
+     * Naziv materijala.
+     * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
+     * sadrži samo razmake, kao i string duži od 150 karaktera.</p>
+     */
     @NotBlank
     @Size(max = 150)
     @Column(name = "material_name", nullable = false, length = 150)
     private String materialName;
 
-    /** Redni broj materijala u okviru lekcije, koristi se za sortiranje. */
+    /**
+     * Redni broj materijala u okviru lekcije, koristi se za sortiranje.
+     * <p>Nedozvoljena vrednost: {@code null}.</p>
+     */
     @NotNull
     @Column(name = "material_order_index", nullable = false)
     private Integer materialOrderIndex;
@@ -49,7 +56,11 @@ public class Material implements MyEntity {
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    /** Eksterna URL adresa materijala (opciono, npr. za video ili dokument). */
+    /**
+     * Eksterna URL adresa materijala (opciono, npr. za video ili dokument).
+     * <p>Nedozvoljena vrednost: string duži od 500 karaktera. {@code null} i
+     * prazan string su dozvoljeni jer je polje opciono.</p>
+     */
     @Size(max = 500)
     @Column(name = "url", length = 500)
     private String url;
