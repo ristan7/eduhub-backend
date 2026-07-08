@@ -3,10 +3,17 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import rs.ac.bg.fon.eduhub.entity.lookup.Role;
@@ -18,11 +25,33 @@ import rs.ac.bg.fon.eduhub.entity.lookup.Role;
  */
 class UserTest {
 
+    private static Validator validator;
+
     private User user;
+
+    @BeforeAll
+    static void setUpValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
     @BeforeEach
     void setUp() {
-        user = new User();
+        user = validUser();
+    }
+
+    private User validUser() {
+        User u = new User();
+        u.setUserEmail("student@eduhub.com");
+        u.setPassword("hashedPassword123");
+        u.setFirstName("Petar");
+        u.setLastName("Nikolic");
+        return u;
+    }
+
+    private boolean hasViolationFor(Set<ConstraintViolation<User>> violations, String propertyName) {
+        return violations.stream()
+                .anyMatch(v -> v.getPropertyPath().toString().equals(propertyName));
     }
 
     @Test
@@ -118,65 +147,220 @@ class UserTest {
     }
 
     @Test
-    void testUserEmailNullIsInvalid() {
+    void testUserEmailValidPassesValidation() {
+        user.setUserEmail("student@eduhub.com");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertFalse(hasViolationFor(violations, "userEmail"));
+    }
+
+    @Test
+    void testUserEmailNullFailsValidation() {
         user.setUserEmail(null);
 
-        assertNull(user.getUserEmail());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "userEmail"));
     }
 
     @Test
-    void testUserEmailBlankIsInvalid() {
+    void testUserEmailEmptyFailsValidation() {
+        user.setUserEmail("");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "userEmail"));
+    }
+
+    @Test
+    void testUserEmailBlankFailsValidation() {
         user.setUserEmail("   ");
 
-        assertTrue(user.getUserEmail().isBlank());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "userEmail"));
     }
 
     @Test
-    void testUserEmailInvalidFormatIsInvalid() {
+    void testUserEmailInvalidFormatFailsValidation() {
         user.setUserEmail("nije-email-adresa");
 
-        assertFalse(user.getUserEmail().matches("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"));
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "userEmail"));
     }
 
     @Test
-    void testPasswordNullIsInvalid() {
+    void testUserEmailOverMaxLengthFailsValidation() {
+        String tooLongEmail = "a".repeat(140) + "@eduhub.com";
+        user.setUserEmail(tooLongEmail);
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertEquals(151, tooLongEmail.length());
+        assertTrue(hasViolationFor(violations, "userEmail"));
+    }
+
+    @Test
+    void testPasswordValidPassesValidation() {
+        user.setPassword("hashedPassword123");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertFalse(hasViolationFor(violations, "password"));
+    }
+
+    @Test
+    void testPasswordNullFailsValidation() {
         user.setPassword(null);
 
-        assertNull(user.getPassword());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "password"));
     }
 
     @Test
-    void testPasswordBlankIsInvalid() {
+    void testPasswordEmptyFailsValidation() {
+        user.setPassword("");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "password"));
+    }
+
+    @Test
+    void testPasswordBlankFailsValidation() {
         user.setPassword("   ");
 
-        assertTrue(user.getPassword().isBlank());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "password"));
     }
 
     @Test
-    void testFirstNameNullIsInvalid() {
+    void testPasswordAtMaxLengthPassesValidation() {
+        user.setPassword("a".repeat(255));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertFalse(hasViolationFor(violations, "password"));
+    }
+
+    @Test
+    void testPasswordOverMaxLengthFailsValidation() {
+        user.setPassword("a".repeat(256));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "password"));
+    }
+
+    @Test
+    void testFirstNameValidPassesValidation() {
+        user.setFirstName("Petar");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertFalse(hasViolationFor(violations, "firstName"));
+    }
+
+    @Test
+    void testFirstNameNullFailsValidation() {
         user.setFirstName(null);
 
-        assertNull(user.getFirstName());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "firstName"));
     }
 
     @Test
-    void testFirstNameBlankIsInvalid() {
+    void testFirstNameEmptyFailsValidation() {
+        user.setFirstName("");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "firstName"));
+    }
+
+    @Test
+    void testFirstNameBlankFailsValidation() {
         user.setFirstName("   ");
 
-        assertTrue(user.getFirstName().isBlank());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "firstName"));
     }
 
     @Test
-    void testLastNameNullIsInvalid() {
+    void testFirstNameAtMaxLengthPassesValidation() {
+        user.setFirstName("a".repeat(60));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertFalse(hasViolationFor(violations, "firstName"));
+    }
+
+    @Test
+    void testFirstNameOverMaxLengthFailsValidation() {
+        user.setFirstName("a".repeat(61));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "firstName"));
+    }
+
+    @Test
+    void testLastNameValidPassesValidation() {
+        user.setLastName("Nikolic");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertFalse(hasViolationFor(violations, "lastName"));
+    }
+
+    @Test
+    void testLastNameNullFailsValidation() {
         user.setLastName(null);
 
-        assertNull(user.getLastName());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "lastName"));
     }
 
     @Test
-    void testLastNameBlankIsInvalid() {
+    void testLastNameEmptyFailsValidation() {
+        user.setLastName("");
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "lastName"));
+    }
+
+    @Test
+    void testLastNameBlankFailsValidation() {
         user.setLastName("   ");
 
-        assertTrue(user.getLastName().isBlank());
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "lastName"));
+    }
+
+    @Test
+    void testLastNameAtMaxLengthPassesValidation() {
+        user.setLastName("a".repeat(60));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertFalse(hasViolationFor(violations, "lastName"));
+    }
+
+    @Test
+    void testLastNameOverMaxLengthFailsValidation() {
+        user.setLastName("a".repeat(61));
+
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+
+        assertTrue(hasViolationFor(violations, "lastName"));
     }
 }

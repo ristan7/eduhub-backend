@@ -3,9 +3,17 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,11 +24,30 @@ import org.junit.jupiter.api.Test;
  */
 class ReviewTest {
 
+    private static Validator validator;
+
     private Review review;
+
+    @BeforeAll
+    static void setUpValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
     @BeforeEach
     void setUp() {
-        review = new Review();
+        review = validReview();
+    }
+
+    private Review validReview() {
+        Review r = new Review();
+        r.setRating(5);
+        return r;
+    }
+
+    private boolean hasViolationFor(Set<ConstraintViolation<Review>> violations, String propertyName) {
+        return violations.stream()
+                .anyMatch(v -> v.getPropertyPath().toString().equals(propertyName));
     }
 
     @Test
@@ -74,23 +101,56 @@ class ReviewTest {
     }
 
     @Test
-    void testRatingNullIsInvalid() {
+    void testRatingValidPassesValidation() {
+        review.setRating(3);
+
+        Set<ConstraintViolation<Review>> violations = validator.validate(review);
+
+        assertFalse(hasViolationFor(violations, "rating"));
+    }
+
+    @Test
+    void testRatingNullFailsValidation() {
         review.setRating(null);
 
-        assertNull(review.getRating());
+        Set<ConstraintViolation<Review>> violations = validator.validate(review);
+
+        assertTrue(hasViolationFor(violations, "rating"));
     }
 
     @Test
-    void testRatingBelowMinimumIsInvalid() {
+    void testRatingBelowMinimumFailsValidation() {
         review.setRating(0);
 
-        assertTrue(review.getRating() < 1);
+        Set<ConstraintViolation<Review>> violations = validator.validate(review);
+
+        assertTrue(hasViolationFor(violations, "rating"));
     }
 
     @Test
-    void testRatingAboveMaximumIsInvalid() {
+    void testRatingAtMinimumPassesValidation() {
+        review.setRating(1);
+
+        Set<ConstraintViolation<Review>> violations = validator.validate(review);
+
+        assertFalse(hasViolationFor(violations, "rating"));
+    }
+
+    @Test
+    void testRatingAtMaximumPassesValidation() {
+        review.setRating(5);
+
+        Set<ConstraintViolation<Review>> violations = validator.validate(review);
+
+        assertFalse(hasViolationFor(violations, "rating"));
+    }
+
+    @Test
+    void testRatingAboveMaximumFailsValidation() {
         review.setRating(6);
 
-        assertTrue(review.getRating() > 5);
+        Set<ConstraintViolation<Review>> violations = validator.validate(review);
+
+        assertTrue(hasViolationFor(violations, "rating"));
     }
 }

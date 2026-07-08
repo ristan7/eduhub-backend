@@ -3,9 +3,17 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,11 +24,36 @@ import org.junit.jupiter.api.Test;
  */
 class CertificateTest {
 
+    private static Validator validator;
+
     private Certificate certificate;
+
+    @BeforeAll
+    static void setUpValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
     @BeforeEach
     void setUp() {
-        certificate = new Certificate();
+        certificate = validCertificate();
+    }
+
+    /**
+     * Pravi Certificate instancu kod koje su sva polja sa Bean Validation
+     * anotacijama postavljena na validne vrednosti. Koristi se kao polazna
+     * tačka za testove koji menjaju tačno jedno polje.
+     */
+    private Certificate validCertificate() {
+        Certificate c = new Certificate();
+        c.setCode("CERT-ABCD1234-2026");
+        c.setCertificateUrl("https://eduhub.com/certificates/1.pdf");
+        return c;
+    }
+
+    private boolean hasViolationFor(Set<ConstraintViolation<Certificate>> violations, String propertyName) {
+        return violations.stream()
+                .anyMatch(v -> v.getPropertyPath().toString().equals(propertyName));
     }
 
     @Test
@@ -73,25 +106,95 @@ class CertificateTest {
         assertNotNull(certificate.getIssuedAt());
     }
 
+
+
     @Test
-    void testCodeNullIsInvalid() {
+    void testCodeValidPassesValidation() {
+        certificate.setCode("CERT-ABCD1234-2026");
+
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertFalse(hasViolationFor(violations, "code"));
+    }
+
+    @Test
+    void testCodeNullFailsValidation() {
         certificate.setCode(null);
 
-        assertNull(certificate.getCode());
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertTrue(hasViolationFor(violations, "code"));
     }
 
     @Test
-    void testCodeBlankIsInvalid() {
+    void testCodeEmptyFailsValidation() {
+        certificate.setCode("");
+
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertTrue(hasViolationFor(violations, "code"));
+    }
+
+    @Test
+    void testCodeBlankFailsValidation() {
         certificate.setCode("   ");
 
-        assertTrue(certificate.getCode().isBlank());
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertTrue(hasViolationFor(violations, "code"));
     }
 
     @Test
-    void testCertificateUrlTooLongIsInvalid() {
-        String tooLongUrl = "a".repeat(501);
-        certificate.setCertificateUrl(tooLongUrl);
+    void testCodeAtMaxLengthPassesValidation() {
+        certificate.setCode("a".repeat(50));
 
-        assertTrue(certificate.getCertificateUrl().length() > 500);
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertFalse(hasViolationFor(violations, "code"));
+    }
+
+    @Test
+    void testCodeOverMaxLengthFailsValidation() {
+        certificate.setCode("a".repeat(51));
+
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertTrue(hasViolationFor(violations, "code"));
+    }
+
+    @Test
+    void testCertificateUrlNullPassesValidation() {
+        certificate.setCertificateUrl(null);
+
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertFalse(hasViolationFor(violations, "certificateUrl"));
+    }
+
+    @Test
+    void testCertificateUrlEmptyPassesValidation() {
+        certificate.setCertificateUrl("");
+
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertFalse(hasViolationFor(violations, "certificateUrl"));
+    }
+
+    @Test
+    void testCertificateUrlAtMaxLengthPassesValidation() {
+        certificate.setCertificateUrl("a".repeat(500));
+
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertFalse(hasViolationFor(violations, "certificateUrl"));
+    }
+
+    @Test
+    void testCertificateUrlOverMaxLengthFailsValidation() {
+        certificate.setCertificateUrl("a".repeat(501));
+
+        Set<ConstraintViolation<Certificate>> violations = validator.validate(certificate);
+
+        assertTrue(hasViolationFor(violations, "certificateUrl"));
     }
 }
