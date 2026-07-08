@@ -1,6 +1,7 @@
 package rs.ac.bg.fon.eduhub.entity.impl;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import rs.ac.bg.fon.eduhub.entity.MyEntity;
@@ -40,7 +41,14 @@ public class Enrollment implements MyEntity {
     @Column(name = "enrolled_at", nullable = false, updatable = false)
     private LocalDateTime enrolledAt;
 
-    /** Procenat napretka studenta kroz kurs (0-100). */
+    /**
+     * Procenat napretka studenta kroz kurs.
+     * <p>Nedozvoljene vrednosti: {@code null}, kao i vrednosti manje od 0
+     * ili veće od 100.</p>
+     */
+    @NotNull
+    @Min(0)
+    @Max(100)
     @Column(name = "progress_percentage", nullable = false)
     private Integer progressPercentage = 0;
 

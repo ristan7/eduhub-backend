@@ -3,10 +3,18 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 import java.time.LocalDateTime;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,11 +25,31 @@ import org.junit.jupiter.api.Test;
  */
 class CourseTest {
 
+    private static Validator validator;
+
     private Course course;
+
+    @BeforeAll
+    static void setUpValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
     @BeforeEach
     void setUp() {
-        course = new Course();
+        course = validCourse();
+    }
+
+    private Course validCourse() {
+        Course c = new Course();
+        c.setCourseTitle("Java Osnove");
+        c.setCourseDescription("Uvod u Javu");
+        return c;
+    }
+
+    private boolean hasViolationFor(Set<ConstraintViolation<Course>> violations, String propertyName) {
+        return violations.stream()
+                .anyMatch(v -> v.getPropertyPath().toString().equals(propertyName));
     }
 
     @Test
@@ -102,39 +130,94 @@ class CourseTest {
         assertTrue(course.getEnrollments().isEmpty());
     }
 
+
     @Test
-    void testCourseTitleNullIsInvalid() {
+    void testCourseTitleValidPassesValidation() {
+        course.setCourseTitle("Java Osnove");
+
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertFalse(hasViolationFor(violations, "courseTitle"));
+    }
+
+    @Test
+    void testCourseTitleNullFailsValidation() {
         course.setCourseTitle(null);
 
-        assertNull(course.getCourseTitle());
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertTrue(hasViolationFor(violations, "courseTitle"));
     }
 
     @Test
-    void testCourseTitleBlankIsInvalid() {
+    void testCourseTitleEmptyFailsValidation() {
+        course.setCourseTitle("");
+
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertTrue(hasViolationFor(violations, "courseTitle"));
+    }
+
+    @Test
+    void testCourseTitleBlankFailsValidation() {
         course.setCourseTitle("   ");
 
-        assertTrue(course.getCourseTitle().isBlank());
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertTrue(hasViolationFor(violations, "courseTitle"));
     }
 
     @Test
-    void testCourseTitleTooLongIsInvalid() {
-        String tooLongTitle = "a".repeat(151);
-        course.setCourseTitle(tooLongTitle);
+    void testCourseTitleAtMaxLengthPassesValidation() {
+        course.setCourseTitle("a".repeat(150));
 
-        assertTrue(course.getCourseTitle().length() > 150);
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertFalse(hasViolationFor(violations, "courseTitle"));
     }
 
     @Test
-    void testCourseDescriptionNullIsInvalid() {
+    void testCourseTitleOverMaxLengthFailsValidation() {
+        course.setCourseTitle("a".repeat(151));
+
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertTrue(hasViolationFor(violations, "courseTitle"));
+    }
+
+    @Test
+    void testCourseDescriptionValidPassesValidation() {
+        course.setCourseDescription("Uvod u Javu");
+
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertFalse(hasViolationFor(violations, "courseDescription"));
+    }
+
+    @Test
+    void testCourseDescriptionNullFailsValidation() {
         course.setCourseDescription(null);
 
-        assertNull(course.getCourseDescription());
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertTrue(hasViolationFor(violations, "courseDescription"));
     }
 
     @Test
-    void testCourseDescriptionBlankIsInvalid() {
+    void testCourseDescriptionEmptyFailsValidation() {
+        course.setCourseDescription("");
+
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertTrue(hasViolationFor(violations, "courseDescription"));
+    }
+
+    @Test
+    void testCourseDescriptionBlankFailsValidation() {
         course.setCourseDescription("   ");
 
-        assertTrue(course.getCourseDescription().isBlank());
+        Set<ConstraintViolation<Course>> violations = validator.validate(course);
+
+        assertTrue(hasViolationFor(violations, "courseDescription"));
     }
 }

@@ -3,9 +3,17 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,11 +24,31 @@ import org.junit.jupiter.api.Test;
  */
 class LessonTest {
 
+    private static Validator validator;
+
     private Lesson lesson;
+
+    @BeforeAll
+    static void setUpValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
     @BeforeEach
     void setUp() {
-        lesson = new Lesson();
+        lesson = validLesson();
+    }
+
+    private Lesson validLesson() {
+        Lesson l = new Lesson();
+        l.setLessonTitle("Uvod u promenljive");
+        l.setLessonOrderIndex(1);
+        return l;
+    }
+
+    private boolean hasViolationFor(Set<ConstraintViolation<Lesson>> violations, String propertyName) {
+        return violations.stream()
+                .anyMatch(v -> v.getPropertyPath().toString().equals(propertyName));
     }
 
     @Test
@@ -87,31 +115,74 @@ class LessonTest {
     }
 
     @Test
-    void testLessonTitleNullIsInvalid() {
+    void testLessonTitleValidPassesValidation() {
+        lesson.setLessonTitle("Uvod u promenljive");
+
+        Set<ConstraintViolation<Lesson>> violations = validator.validate(lesson);
+
+        assertFalse(hasViolationFor(violations, "lessonTitle"));
+    }
+
+    @Test
+    void testLessonTitleNullFailsValidation() {
         lesson.setLessonTitle(null);
 
-        assertNull(lesson.getLessonTitle());
+        Set<ConstraintViolation<Lesson>> violations = validator.validate(lesson);
+
+        assertTrue(hasViolationFor(violations, "lessonTitle"));
     }
 
     @Test
-    void testLessonTitleBlankIsInvalid() {
+    void testLessonTitleEmptyFailsValidation() {
+        lesson.setLessonTitle("");
+
+        Set<ConstraintViolation<Lesson>> violations = validator.validate(lesson);
+
+        assertTrue(hasViolationFor(violations, "lessonTitle"));
+    }
+
+    @Test
+    void testLessonTitleBlankFailsValidation() {
         lesson.setLessonTitle("   ");
 
-        assertTrue(lesson.getLessonTitle().isBlank());
+        Set<ConstraintViolation<Lesson>> violations = validator.validate(lesson);
+
+        assertTrue(hasViolationFor(violations, "lessonTitle"));
     }
 
     @Test
-    void testLessonTitleTooLongIsInvalid() {
-        String tooLongTitle = "a".repeat(151);
-        lesson.setLessonTitle(tooLongTitle);
+    void testLessonTitleAtMaxLengthPassesValidation() {
+        lesson.setLessonTitle("a".repeat(150));
 
-        assertTrue(lesson.getLessonTitle().length() > 150);
+        Set<ConstraintViolation<Lesson>> violations = validator.validate(lesson);
+
+        assertFalse(hasViolationFor(violations, "lessonTitle"));
     }
 
     @Test
-    void testLessonOrderIndexNullIsInvalid() {
+    void testLessonTitleOverMaxLengthFailsValidation() {
+        lesson.setLessonTitle("a".repeat(151));
+
+        Set<ConstraintViolation<Lesson>> violations = validator.validate(lesson);
+
+        assertTrue(hasViolationFor(violations, "lessonTitle"));
+    }
+
+    @Test
+    void testLessonOrderIndexValidPassesValidation() {
+        lesson.setLessonOrderIndex(1);
+
+        Set<ConstraintViolation<Lesson>> violations = validator.validate(lesson);
+
+        assertFalse(hasViolationFor(violations, "lessonOrderIndex"));
+    }
+
+    @Test
+    void testLessonOrderIndexNullFailsValidation() {
         lesson.setLessonOrderIndex(null);
 
-        assertNull(lesson.getLessonOrderIndex());
+        Set<ConstraintViolation<Lesson>> violations = validator.validate(lesson);
+
+        assertTrue(hasViolationFor(violations, "lessonOrderIndex"));
     }
 }

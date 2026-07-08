@@ -3,10 +3,17 @@ package rs.ac.bg.fon.eduhub.entity.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,11 +24,31 @@ import org.junit.jupiter.api.Test;
  */
 class NotificationTest {
 
+    private static Validator validator;
+
     private Notification notification;
+
+    @BeforeAll
+    static void setUpValidator() {
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        validator = factory.getValidator();
+    }
 
     @BeforeEach
     void setUp() {
-        notification = new Notification();
+        notification = validNotification();
+    }
+
+    private Notification validNotification() {
+        Notification n = new Notification();
+        n.setNotificationTitle("Sertifikat izdat");
+        n.setMessage("Vas sertifikat je spreman.");
+        return n;
+    }
+
+    private boolean hasViolationFor(Set<ConstraintViolation<Notification>> violations, String propertyName) {
+        return violations.stream()
+                .anyMatch(v -> v.getPropertyPath().toString().equals(propertyName));
     }
 
     @Test
@@ -88,38 +115,92 @@ class NotificationTest {
     }
 
     @Test
-    void testNotificationTitleNullIsInvalid() {
+    void testNotificationTitleValidPassesValidation() {
+        notification.setNotificationTitle("Sertifikat izdat");
+
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertFalse(hasViolationFor(violations, "notificationTitle"));
+    }
+
+    @Test
+    void testNotificationTitleNullFailsValidation() {
         notification.setNotificationTitle(null);
 
-        assertNull(notification.getNotificationTitle());
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertTrue(hasViolationFor(violations, "notificationTitle"));
     }
 
     @Test
-    void testNotificationTitleBlankIsInvalid() {
+    void testNotificationTitleEmptyFailsValidation() {
+        notification.setNotificationTitle("");
+
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertTrue(hasViolationFor(violations, "notificationTitle"));
+    }
+
+    @Test
+    void testNotificationTitleBlankFailsValidation() {
         notification.setNotificationTitle("   ");
 
-        assertTrue(notification.getNotificationTitle().isBlank());
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertTrue(hasViolationFor(violations, "notificationTitle"));
     }
 
     @Test
-    void testNotificationTitleTooLongIsInvalid() {
-        String tooLongTitle = "a".repeat(151);
-        notification.setNotificationTitle(tooLongTitle);
+    void testNotificationTitleAtMaxLengthPassesValidation() {
+        notification.setNotificationTitle("a".repeat(150));
 
-        assertTrue(notification.getNotificationTitle().length() > 150);
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertFalse(hasViolationFor(violations, "notificationTitle"));
     }
 
     @Test
-    void testMessageNullIsInvalid() {
+    void testNotificationTitleOverMaxLengthFailsValidation() {
+        notification.setNotificationTitle("a".repeat(151));
+
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertTrue(hasViolationFor(violations, "notificationTitle"));
+    }
+
+    @Test
+    void testMessageValidPassesValidation() {
+        notification.setMessage("Vas sertifikat je spreman.");
+
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertFalse(hasViolationFor(violations, "message"));
+    }
+
+    @Test
+    void testMessageNullFailsValidation() {
         notification.setMessage(null);
 
-        assertNull(notification.getMessage());
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertTrue(hasViolationFor(violations, "message"));
     }
 
     @Test
-    void testMessageBlankIsInvalid() {
+    void testMessageEmptyFailsValidation() {
+        notification.setMessage("");
+
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertTrue(hasViolationFor(violations, "message"));
+    }
+
+    @Test
+    void testMessageBlankFailsValidation() {
         notification.setMessage("   ");
 
-        assertTrue(notification.getMessage().isBlank());
+        Set<ConstraintViolation<Notification>> violations = validator.validate(notification);
+
+        assertTrue(hasViolationFor(violations, "message"));
     }
 }

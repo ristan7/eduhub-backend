@@ -36,9 +36,10 @@ public class Certificate implements MyEntity {
     /**
      * Jedinstveni kod sertifikata, generisan pri izdavanju.
      * <p>Nedozvoljene vrednosti: {@code null}, prazan string ili string koji
-     * sadrži samo razmake.</p>
+     * sadrži samo razmake, kao i string duži od 50 karaktera.</p>
      */
     @NotBlank
+    @Size(max = 50)
     @Column(name = "code", nullable = false, unique = true, length = 50)
     private String code;
 
